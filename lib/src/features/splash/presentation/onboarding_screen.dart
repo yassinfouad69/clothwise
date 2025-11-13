@@ -21,7 +21,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<_OnboardingPage> _pages = const [
     _OnboardingPage(
-      icon: Icons.checkroom_outlined,
+      icon: Icons.dry_cleaning,
       title: 'Classify your clothes',
       description:
           'Upload photos and organize your wardrobe by type, color, and usage.',
@@ -158,14 +158,41 @@ class _OnboardingPage extends StatelessWidget {
             width: AppSpacing.onboardingIconSize,
             height: AppSpacing.onboardingIconSize,
             decoration: BoxDecoration(
-              color: AppColors.cardBackground,
               borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
             ),
-            child: Icon(
-              icon,
-              size: 32,
-              color: AppColors.primaryBrown,
-            ),
+            child: icon == Icons.dry_cleaning
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                    child: Image.asset(
+                      'assets/images/logo.jpg',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: AppColors.primaryBrown,
+                          child: const Center(
+                            child: Icon(
+                              Icons.dry_cleaning,
+                              size: 32,
+                              color: AppColors.cardBackground,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBrown,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        icon,
+                        size: 32,
+                        color: AppColors.cardBackground,
+                      ),
+                    ),
+                  ),
           ),
 
           const SizedBox(height: AppSpacing.xl),

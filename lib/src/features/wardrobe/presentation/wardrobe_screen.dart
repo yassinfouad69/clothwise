@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:clothwise/src/app/theme/app_colors.dart';
 import 'package:clothwise/src/app/theme/app_spacing.dart';
 import 'package:clothwise/src/app/theme/app_text_styles.dart';
 import 'package:clothwise/src/widgets/app_text_field.dart';
+import 'package:clothwise/src/features/wardrobe/presentation/providers/wardrobe_providers.dart';
+import 'package:clothwise/src/features/wardrobe/presentation/add_item_screen.dart';
+import 'package:clothwise/src/features/home/domain/entities/clothing_item.dart';
 
 /// Wardrobe screen (Screens 9-10) - User's clothing collection
-class WardrobeScreen extends StatefulWidget {
+class WardrobeScreen extends ConsumerStatefulWidget {
   const WardrobeScreen({super.key});
 
   @override
-  State<WardrobeScreen> createState() => _WardrobeScreenState();
+  ConsumerState<WardrobeScreen> createState() => _WardrobeScreenState();
 }
 
-class _WardrobeScreenState extends State<WardrobeScreen> {
+class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
   String _selectedCategory = 'All';
 
   final List<String> _categories = [
@@ -100,40 +105,91 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
 
           // Wardrobe items grid
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 0.7,
-                crossAxisSpacing: AppSpacing.md,
-                mainAxisSpacing: AppSpacing.md,
-              ),
-              itemCount: 6,
-              itemBuilder: (context, index) {
-                return _WardrobeItemCard(
-                  name: index == 0
-                      ? 'Cotton Shirt'
-                      : index == 1
-                          ? 'Denim Jeans'
-                          : index == 2
-                              ? 'Formal Blazer'
-                              : index == 3
-                                  ? 'White Sneakers'
-                                  : 'Item ${index + 1}',
-                  category: index == 0
-                      ? 'Casual'
-                      : index == 2
-                          ? 'Formal'
-                          : 'Casual',
-                  color: index == 0
-                      ? 'Blue'
-                      : index == 1
-                          ? 'Dark Blue'
-                          : index == 2
-                              ? 'Black'
-                              : index == 3
-                                  ? 'White'
-                                  : 'Color',
+            child: Consumer(
+              builder: (context, ref, child) {
+                final wardrobeState = ref.watch(wardrobeNotifierProvider);
+
+                return wardrobeState.when(
+                  data: (items) {
+                    // Filter items by category
+                    final filteredItems = _selectedCategory == 'All'
+                        ? items
+                        : items.where((item) {
+                            return item.category.displayName == _selectedCategory;
+                          }).toList();
+
+                    if (filteredItems.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.checkroom_outlined,
+                              size: 64,
+                              color: AppColors.textTertiary,
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            Text(
+                              'No items in your wardrobe',
+                              style: AppTextStyles.bodyRegular.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            Text(
+                              'Tap + to add your first item',
+                              style: AppTextStyles.bodySmall,
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return GridView.builder(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.7,
+                        crossAxisSpacing: AppSpacing.md,
+                        mainAxisSpacing: AppSpacing.md,
+                      ),
+                      itemCount: filteredItems.length,
+                      itemBuilder: (context, index) {
+                        final item = filteredItems[index];
+                        return _WardrobeItemCard(item: item);
+                      },
+                    );
+                  },
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryBrown,
+                    ),
+                  ),
+                  error: (error, stack) => Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: AppColors.textTertiary,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          'Error loading items',
+                          style: AppTextStyles.bodyRegular.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          error.toString(),
+                          style: AppTextStyles.bodySmall,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
                 );
               },
             ),
@@ -141,10 +197,16 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Add new item
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddItemScreen(),
+            ),
+          );
         },
-        child: const Icon(Icons.add),
+        backgroundColor: AppColors.primaryBrown,
+        child: const Icon(Icons.add, color: AppColors.cardBackground),
       ),
     );
   }
@@ -152,14 +214,10 @@ class _WardrobeScreenState extends State<WardrobeScreen> {
 
 class _WardrobeItemCard extends StatelessWidget {
   const _WardrobeItemCard({
-    required this.name,
-    required this.category,
-    required this.color,
+    required this.item,
   });
 
-  final String name;
-  final String category;
-  final String color;
+  final ClothingItem item;
 
   @override
   Widget build(BuildContext context) {
@@ -178,7 +236,7 @@ class _WardrobeItemCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image placeholder
+          // Image
           Expanded(
             child: Container(
               decoration: BoxDecoration(
@@ -187,13 +245,35 @@ class _WardrobeItemCard extends StatelessWidget {
                   top: Radius.circular(AppSpacing.cardRadius),
                 ),
               ),
-              child: Center(
-                child: Icon(
-                  Icons.checkroom_outlined,
-                  size: 48,
-                  color: AppColors.textTertiary,
-                ),
-              ),
+              child: item.imageUrl != null
+                  ? ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(AppSpacing.cardRadius),
+                      ),
+                      child: CachedNetworkImage(
+                        imageUrl: item.imageUrl!,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        placeholder: (context, url) => const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primaryBrown,
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => const Center(
+                          child: Icon(
+                            Icons.error_outline,
+                            color: AppColors.textTertiary,
+                          ),
+                        ),
+                      ),
+                    )
+                  : const Center(
+                      child: Icon(
+                        Icons.checkroom_outlined,
+                        size: 48,
+                        color: AppColors.textTertiary,
+                      ),
+                    ),
             ),
           ),
 
@@ -204,7 +284,7 @@ class _WardrobeItemCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  name,
+                  item.name,
                   style: AppTextStyles.itemName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -222,7 +302,7 @@ class _WardrobeItemCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        category,
+                        item.usage.displayName,
                         style: const TextStyle(fontSize: 10),
                       ),
                     ),
@@ -231,7 +311,7 @@ class _WardrobeItemCard extends StatelessWidget {
                       width: 12,
                       height: 12,
                       decoration: BoxDecoration(
-                        color: _getColorFromName(color),
+                        color: _getColorFromName(item.color),
                         shape: BoxShape.circle,
                         border: Border.all(color: AppColors.borderLight),
                       ),
@@ -239,7 +319,7 @@ class _WardrobeItemCard extends StatelessWidget {
                     const SizedBox(width: AppSpacing.xs),
                     Expanded(
                       child: Text(
-                        color,
+                        item.color,
                         style: const TextStyle(fontSize: 10),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -256,17 +336,21 @@ class _WardrobeItemCard extends StatelessWidget {
   }
 
   Color _getColorFromName(String colorName) {
-    switch (colorName.toLowerCase()) {
-      case 'blue':
-        return Colors.blue;
-      case 'dark blue':
-        return Colors.blue.shade900;
-      case 'black':
-        return Colors.black;
-      case 'white':
-        return Colors.white;
-      default:
-        return AppColors.borderLight;
-    }
+    final lowerColor = colorName.toLowerCase();
+
+    // Common colors
+    if (lowerColor.contains('blue')) return Colors.blue;
+    if (lowerColor.contains('red')) return Colors.red;
+    if (lowerColor.contains('green')) return Colors.green;
+    if (lowerColor.contains('yellow')) return Colors.yellow;
+    if (lowerColor.contains('orange')) return Colors.orange;
+    if (lowerColor.contains('purple') || lowerColor.contains('violet')) return Colors.purple;
+    if (lowerColor.contains('pink')) return Colors.pink;
+    if (lowerColor.contains('brown')) return Colors.brown;
+    if (lowerColor.contains('black')) return Colors.black;
+    if (lowerColor.contains('white')) return Colors.white;
+    if (lowerColor.contains('grey') || lowerColor.contains('gray')) return Colors.grey;
+
+    return AppColors.borderLight;
   }
 }

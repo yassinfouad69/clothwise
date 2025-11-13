@@ -27,13 +27,26 @@ class SplashScreen extends StatelessWidget {
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  color: AppColors.cardBackground,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                 ),
-                child: const Icon(
-                  Icons.checkroom,
-                  size: 56,
-                  color: AppColors.primaryBrown,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                  child: Image.asset(
+                    'assets/images/logo.jpg',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: AppColors.primaryBrown,
+                        child: const Center(
+                          child: Icon(
+                            Icons.dry_cleaning,
+                            size: 56,
+                            color: AppColors.cardBackground,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
 

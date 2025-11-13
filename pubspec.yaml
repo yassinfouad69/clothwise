@@ -38,6 +38,14 @@ dependencies:
   equatable: ^2.0.5
   logger: ^2.0.2+1
 
+  # Supabase
+  supabase_flutter: ^2.3.4
+
+  # Image Picker
+  image_picker: ^1.0.7
+  path_provider: ^2.1.2
+  uuid: ^4.3.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

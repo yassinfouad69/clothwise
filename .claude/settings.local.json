@@ -4,7 +4,10 @@
       "Bash(curl:*)",
       "Bash(flutter pub get:*)",
       "Bash(flutter analyze:*)",
-      "Bash(flutter test:*)"
+      "Bash(flutter test:*)",
+      "Bash(flutter run:*)",
+      "Bash(nc:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
