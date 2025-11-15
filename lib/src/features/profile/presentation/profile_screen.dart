@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:clothwise/src/app/theme/app_colors.dart';
 import 'package:clothwise/src/app/theme/app_spacing.dart';
 import 'package:clothwise/src/app/theme/app_text_styles.dart';
+import 'package:clothwise/src/app/theme/theme_provider.dart';
 import 'package:clothwise/src/features/profile/presentation/settings_modal.dart';
 
 /// Profile screen (Screens 13-14) - User stats and settings
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDarkMode = ref.watch(isDarkModeProvider);
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
-        title: const Text('Settings', style: AppTextStyles.appTitle),
+        title: Text('Settings', style: theme.textTheme.headlineLarge),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
@@ -33,13 +37,13 @@ class ProfileScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: AppColors.cardBackground,
+                color: theme.cardTheme.color,
                 borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
-                    color: AppColors.shadowMedium,
+                    color: isDarkMode ? AppColors.shadowMediumDark : AppColors.shadowMedium,
                     blurRadius: 8,
-                    offset: Offset(0, 2),
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
@@ -48,12 +52,12 @@ class ProfileScreen extends StatelessWidget {
                   // Avatar and name
                   Row(
                     children: [
-                      const CircleAvatar(
+                      CircleAvatar(
                         radius: 24,
-                        backgroundColor: AppColors.primaryBrown,
+                        backgroundColor: theme.colorScheme.primary,
                         child: Icon(
                           Icons.person,
-                          color: AppColors.cardBackground,
+                          color: theme.colorScheme.onPrimary,
                           size: 28,
                         ),
                       ),
@@ -87,13 +91,13 @@ class ProfileScreen extends StatelessWidget {
                       Container(
                         width: 1,
                         height: 40,
-                        color: AppColors.divider,
+                        color: isDarkMode ? AppColors.dividerDark : AppColors.divider,
                       ),
                       _buildStatItem('18', 'Outfits'),
                       Container(
                         width: 1,
                         height: 40,
-                        color: AppColors.divider,
+                        color: isDarkMode ? AppColors.dividerDark : AppColors.divider,
                       ),
                       _buildStatItem('92%', 'Style Score'),
                     ],
@@ -103,6 +107,35 @@ class ProfileScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: AppSpacing.xl),
+
+            // Dark Mode Toggle
+            _buildSettingCard(
+              context,
+              icon: Icons.dark_mode_outlined,
+              title: 'Dark Mode',
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    isDarkMode ? 'On' : 'Off',
+                    style: AppTextStyles.bodyRegular.copyWith(
+                      color: isDarkMode
+                          ? AppColors.textPrimaryDark
+                          : AppColors.textSecondary,
+                    ),
+                  ),
+                  Switch(
+                    value: isDarkMode,
+                    onChanged: (value) {
+                      ref.read(themeModeProvider.notifier).toggleTheme();
+                    },
+                    activeColor: AppColors.primaryBrownDark,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: AppSpacing.md),
 
             // Gender preference
             _buildSettingCard(
@@ -145,10 +178,13 @@ class ProfileScreen extends StatelessWidget {
                       label: const Text('°C'),
                       selected: true,
                       onSelected: (selected) {},
-                      backgroundColor: AppColors.cardBackground,
-                      selectedColor: AppColors.primaryBrown,
+                      backgroundColor: theme.cardTheme.color,
+                      selectedColor: theme.colorScheme.primary,
                       labelStyle: AppTextStyles.badge.copyWith(
-                        color: AppColors.cardBackground,
+                        color: theme.colorScheme.onPrimary,
+                      ),
+                      side: BorderSide(
+                        color: theme.colorScheme.primary,
                       ),
                     ),
                   ),
@@ -158,9 +194,15 @@ class ProfileScreen extends StatelessWidget {
                       label: const Text('Celsius'),
                       selected: false,
                       onSelected: (selected) {},
-                      backgroundColor: AppColors.cardBackground,
-                      selectedColor: AppColors.primaryBrown,
-                      labelStyle: const TextStyle(fontSize: 12),
+                      backgroundColor: theme.cardTheme.color,
+                      selectedColor: theme.colorScheme.primary,
+                      labelStyle: TextStyle(
+                        fontSize: 12,
+                        color: theme.textTheme.bodyMedium?.color,
+                      ),
+                      side: BorderSide(
+                        color: isDarkMode ? AppColors.borderLightDark : AppColors.borderLight,
+                      ),
                     ),
                   ),
                 ],
@@ -201,16 +243,40 @@ class ProfileScreen extends StatelessWidget {
                     label: const Text('Complementary'),
                     selected: false,
                     onSelected: (selected) {},
+                    backgroundColor: theme.cardTheme.color,
+                    selectedColor: theme.colorScheme.primary,
+                    labelStyle: TextStyle(
+                      color: theme.textTheme.bodyMedium?.color,
+                    ),
+                    side: BorderSide(
+                      color: isDarkMode ? AppColors.borderLightDark : AppColors.borderLight,
+                    ),
                   ),
                   ChoiceChip(
                     label: const Text('Analogous'),
                     selected: false,
                     onSelected: (selected) {},
+                    backgroundColor: theme.cardTheme.color,
+                    selectedColor: theme.colorScheme.primary,
+                    labelStyle: TextStyle(
+                      color: theme.textTheme.bodyMedium?.color,
+                    ),
+                    side: BorderSide(
+                      color: isDarkMode ? AppColors.borderLightDark : AppColors.borderLight,
+                    ),
                   ),
                   ChoiceChip(
                     label: const Text('Triadic'),
                     selected: false,
                     onSelected: (selected) {},
+                    backgroundColor: theme.cardTheme.color,
+                    selectedColor: theme.colorScheme.primary,
+                    labelStyle: TextStyle(
+                      color: theme.textTheme.bodyMedium?.color,
+                    ),
+                    side: BorderSide(
+                      color: isDarkMode ? AppColors.borderLightDark : AppColors.borderLight,
+                    ),
                   ),
                 ],
               ),
@@ -222,9 +288,11 @@ class ProfileScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: AppColors.cardBackground,
+                color: theme.cardTheme.color,
                 borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                border: Border.all(color: AppColors.borderLight),
+                border: Border.all(
+                  color: isDarkMode ? AppColors.borderLightDark : AppColors.borderLight,
+                ),
               ),
               child: Row(
                 children: [
@@ -234,23 +302,25 @@ class ProfileScreen extends StatelessWidget {
                       vertical: AppSpacing.xs,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryBrown,
+                      color: theme.colorScheme.primary,
                       borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Auto',
                       style: TextStyle(
-                        color: AppColors.cardBackground,
+                        color: theme.colorScheme.onPrimary,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.sm),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Determines how outfit colors are matched together',
-                      style: AppTextStyles.caption,
+                      style: AppTextStyles.caption.copyWith(
+                        color: theme.textTheme.bodySmall?.color,
+                      ),
                     ),
                   ),
                 ],
@@ -260,11 +330,13 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: AppSpacing.xl),
 
             // Data Management section
-            const Align(
+            Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 'Data Management',
-                style: AppTextStyles.sectionHeader,
+                style: AppTextStyles.sectionHeader.copyWith(
+                  color: theme.textTheme.headlineMedium?.color,
+                ),
               ),
             ),
 
@@ -282,6 +354,10 @@ class ProfileScreen extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.lg,
+                ),
+                foregroundColor: theme.textTheme.bodyLarge?.color,
+                side: BorderSide(
+                  color: isDarkMode ? AppColors.borderLightDark : AppColors.borderLight,
                 ),
               ),
             ),
@@ -301,8 +377,10 @@ class ProfileScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.lg,
                 ),
-                foregroundColor: AppColors.error,
-                side: const BorderSide(color: AppColors.error),
+                foregroundColor: isDarkMode ? AppColors.errorDark : AppColors.error,
+                side: BorderSide(
+                  color: isDarkMode ? AppColors.errorDark : AppColors.error,
+                ),
               ),
             ),
           ],
@@ -333,16 +411,18 @@ class ProfileScreen extends StatelessWidget {
     required String title,
     required Widget child,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: AppColors.shadowMedium,
+            color: isDark ? AppColors.shadowMediumDark : AppColors.shadowMedium,
             blurRadius: 8,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -351,9 +431,9 @@ class ProfileScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: AppColors.textSecondary),
+              Icon(icon, size: 20, color: theme.colorScheme.secondary),
               const SizedBox(width: AppSpacing.sm),
-              Text(title, style: AppTextStyles.sectionHeader),
+              Text(title, style: theme.textTheme.headlineMedium),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
@@ -383,10 +463,12 @@ class _GenderToggleState extends State<_GenderToggle> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       height: 40,
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: isDark ? AppColors.backgroundDark : AppColors.background,
         borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
       ),
       child: Row(
@@ -402,7 +484,7 @@ class _GenderToggleState extends State<_GenderToggle> {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: _selectedGender == 'Male'
-                      ? AppColors.primaryBrown
+                      ? theme.colorScheme.primary
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                 ),
@@ -410,8 +492,8 @@ class _GenderToggleState extends State<_GenderToggle> {
                   'Male',
                   style: AppTextStyles.buttonMedium.copyWith(
                     color: _selectedGender == 'Male'
-                        ? AppColors.cardBackground
-                        : AppColors.textPrimary,
+                        ? theme.colorScheme.onPrimary
+                        : theme.textTheme.bodyMedium?.color,
                   ),
                 ),
               ),
@@ -428,7 +510,7 @@ class _GenderToggleState extends State<_GenderToggle> {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: _selectedGender == 'Female'
-                      ? AppColors.femaleColor
+                      ? (isDark ? AppColors.femaleColorDark : AppColors.femaleColor)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                 ),
@@ -436,8 +518,8 @@ class _GenderToggleState extends State<_GenderToggle> {
                   'Female',
                   style: AppTextStyles.buttonMedium.copyWith(
                     color: _selectedGender == 'Female'
-                        ? AppColors.cardBackground
-                        : AppColors.textPrimary,
+                        ? (isDark ? AppColors.backgroundDark : AppColors.cardBackground)
+                        : theme.textTheme.bodyMedium?.color,
                   ),
                 ),
               ),

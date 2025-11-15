@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:clothwise/src/app/router.dart';
 import 'package:clothwise/src/app/theme/app_colors.dart';
 import 'package:clothwise/src/app/theme/app_spacing.dart';
 import 'package:clothwise/src/app/theme/app_text_styles.dart';
@@ -77,47 +79,47 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
-        title: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.asset(
-                  'assets/images/logo.jpg',
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: AppColors.primaryBrown,
-                      child: const Center(
-                        child: Icon(
-                          Icons.dry_cleaning,
-                          size: 22,
-                          color: AppColors.cardBackground,
-                        ),
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                Theme.of(context).brightness == Brightness.dark
+                    ? 'assets/images/logo_dark.png'
+                    : 'assets/images/logo_light.jpg',
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    child: Center(
+                      child: Icon(
+                        Icons.checkroom,
+                        size: 28,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? const Color(0xFFB8956A)
+                            : AppColors.primaryBrown,
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               ),
             ),
-            const SizedBox(width: AppSpacing.sm),
-            const Text('ClothWise', style: AppTextStyles.appTitle),
-          ],
+          ),
         ),
+        title: Text('ClothWise', style: Theme.of(context).textTheme.headlineLarge),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {
-              // TODO: Show settings modal
+              context.go(RoutePaths.profile);
             },
           ),
         ],
@@ -130,9 +132,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: AppSpacing.lg),
 
             // Title
-            const Text(
+            Text(
               'Upload Your Photo',
-              style: AppTextStyles.h2,
+              style: Theme.of(context).textTheme.displayMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -141,7 +143,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Text(
               'Get personalized outfit recommendations',
               style: AppTextStyles.bodyRegular.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -154,6 +158,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               title: 'Choose from Gallery',
               subtitle: 'Upload a photo from your device',
               onTap: _pickFromGallery,
+              useAlternateColor: false,
             ),
 
             const SizedBox(height: AppSpacing.lg),
@@ -164,6 +169,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               title: 'Scan with Camera',
               subtitle: 'Take a photo using your camera',
               onTap: _takePhoto,
+              useAlternateColor: false,
             ),
 
             const SizedBox(height: AppSpacing.md),
@@ -172,7 +178,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Text(
               'JPG, JPEG, PNG supported',
               style: AppTextStyles.caption.copyWith(
-                color: AppColors.textTertiary,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.textTertiaryDark
+                    : AppColors.textTertiary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -195,12 +203,14 @@ class _UploadOption extends StatefulWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.useAlternateColor = false,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+  final bool useAlternateColor;
 
   @override
   State<_UploadOption> createState() => _UploadOptionState();
@@ -227,6 +237,30 @@ class _UploadOptionState extends State<_UploadOption>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    // Button colors that change based on theme mode
+    final cardColor = isDarkMode
+        ? const Color(0xFFB8956A) // Gold in dark mode
+        : const Color(0xFFFFFFFF); // White in light mode
+
+    final blobAreaColor = isDarkMode
+        ? const Color(0xFF1A1A1A) // Black in dark mode
+        : const Color(0xFFEAE0D5); // Beige in light mode
+
+    final titleColor = isDarkMode
+        ? const Color(0xFF1A1A1A) // Dark text on gold in dark mode
+        : AppColors.textPrimary; // Dark brown text in light mode
+
+    final subtitleColor = isDarkMode
+        ? const Color(0xFF2A2A2A) // Slightly lighter dark in dark mode
+        : AppColors.textSecondary; // Medium brown in light mode
+
+    final iconColor = isDarkMode
+        ? const Color(0xFFFFFFFF) // White icon in dark mode
+        : AppColors.primaryBrown; // Dark brown icon in light mode
+
     return InkWell(
       onTap: widget.onTap,
       borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
@@ -234,13 +268,13 @@ class _UploadOptionState extends State<_UploadOption>
         width: double.infinity,
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
+          color: cardColor,
           borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
-              color: AppColors.shadowMedium,
+              color: isDarkMode ? AppColors.shadowMediumDark : AppColors.shadowMedium,
               blurRadius: 8,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -251,7 +285,7 @@ class _UploadOptionState extends State<_UploadOption>
               width: double.infinity,
               height: 120,
               decoration: BoxDecoration(
-                color: AppColors.background,
+                color: blobAreaColor,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ClipRRect(
@@ -264,7 +298,9 @@ class _UploadOptionState extends State<_UploadOption>
                         return CustomPaint(
                           painter: MultiBlobPainter(
                             animation: _controller,
-                            color: AppColors.primaryBrown.withValues(alpha: 0.15),
+                            color: isDarkMode
+                                ? const Color(0xFFB8956A).withValues(alpha: 0.2) // Gold blobs in dark mode
+                                : AppColors.primaryBrown.withValues(alpha: 0.1), // Brown blobs in light mode
                           ),
                           size: Size.infinite,
                         );
@@ -274,7 +310,7 @@ class _UploadOptionState extends State<_UploadOption>
                       child: Icon(
                         widget.icon,
                         size: 40,
-                        color: AppColors.primaryBrown,
+                        color: iconColor,
                       ),
                     ),
                   ],
@@ -284,14 +320,16 @@ class _UploadOptionState extends State<_UploadOption>
             const SizedBox(height: AppSpacing.md),
             Text(
               widget.title,
-              style: AppTextStyles.h3,
+              style: AppTextStyles.h3.copyWith(
+                color: titleColor,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
               widget.subtitle,
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: subtitleColor,
               ),
               textAlign: TextAlign.center,
             ),
@@ -308,20 +346,23 @@ class _LastOutfitsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Icon(
+            Icon(
               Icons.history,
               size: 20,
-              color: AppColors.textSecondary,
+              color: isDarkMode ? AppColors.textSecondaryDark : AppColors.textSecondary,
             ),
             const SizedBox(width: AppSpacing.xs),
             Text(
               'Last Outfits You Chose',
-              style: AppTextStyles.sectionHeader,
+              style: theme.textTheme.headlineMedium,
             ),
           ],
         ),
@@ -336,13 +377,13 @@ class _LastOutfitsSection extends StatelessWidget {
                 width: 140,
                 margin: const EdgeInsets.only(right: AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: AppColors.cardBackground,
+                  color: theme.cardTheme.color,
                   borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                  boxShadow: const [
+                  boxShadow: [
                     BoxShadow(
-                      color: AppColors.shadowMedium,
+                      color: isDarkMode ? AppColors.shadowMediumDark : AppColors.shadowMedium,
                       blurRadius: 8,
-                      offset: Offset(0, 2),
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
@@ -355,7 +396,7 @@ class _LastOutfitsSection extends StatelessWidget {
                       height: 140,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: AppColors.borderLight,
+                        color: isDarkMode ? AppColors.borderLightDark : AppColors.borderLight,
                         borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(AppSpacing.cardRadius),
                         ),
@@ -368,7 +409,7 @@ class _LastOutfitsSection extends StatelessWidget {
                                   ? Icons.business_center
                                   : Icons.sports_basketball,
                           size: 48,
-                          color: AppColors.textTertiary,
+                          color: isDarkMode ? AppColors.textTertiaryDark : AppColors.textTertiary,
                         ),
                       ),
                     ),
@@ -386,7 +427,9 @@ class _LastOutfitsSection extends StatelessWidget {
                                     : index == 2
                                         ? 'Sport Casual'
                                         : 'Evening Wear',
-                            style: AppTextStyles.itemName,
+                            style: AppTextStyles.itemName.copyWith(
+                              color: theme.textTheme.bodyLarge?.color,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -398,7 +441,7 @@ class _LastOutfitsSection extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: AppColors.borderLight,
+                                color: isDarkMode ? AppColors.borderLightDark : AppColors.borderLight,
                               ),
                               borderRadius: BorderRadius.circular(12),
                             ),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:clothwise/src/app/theme/app_colors.dart';
 import 'package:clothwise/src/app/theme/app_spacing.dart';
 import 'package:clothwise/src/app/theme/app_text_styles.dart';
+import 'package:clothwise/src/app/theme/theme_provider.dart';
 
 /// Recommendations screen - Shows AI recommendations based on uploaded item
 class RecommendationsScreen extends ConsumerStatefulWidget {
@@ -45,6 +46,9 @@ class _RecommendationsScreenState
   ];
 
   void _showAllFiltersModal() {
+    final theme = Theme.of(context);
+    final isDarkMode = ref.read(isDarkModeProvider);
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -52,9 +56,9 @@ class _RecommendationsScreenState
       builder: (context) {
         return Container(
           height: MediaQuery.of(context).size.height * 0.7,
-          decoration: const BoxDecoration(
-            color: AppColors.background,
-            borderRadius: BorderRadius.vertical(
+          decoration: BoxDecoration(
+            color: theme.scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(
               top: Radius.circular(AppSpacing.radiusLg),
             ),
           ),
@@ -66,7 +70,7 @@ class _RecommendationsScreenState
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.borderLight,
+                  color: isDarkMode ? AppColors.borderLightDark : AppColors.borderLight,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -77,9 +81,11 @@ class _RecommendationsScreenState
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'All Categories',
-                      style: AppTextStyles.h3,
+                      style: AppTextStyles.h3.copyWith(
+                        color: theme.textTheme.headlineSmall?.color,
+                      ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close),
@@ -109,15 +115,15 @@ class _RecommendationsScreenState
                         filter,
                         style: AppTextStyles.bodyRegular.copyWith(
                           color: isSelected
-                              ? AppColors.primaryBrown
-                              : AppColors.textPrimary,
+                              ? theme.colorScheme.primary
+                              : theme.textTheme.bodyLarge?.color,
                           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                         ),
                       ),
                       trailing: isSelected
-                          ? const Icon(
+                          ? Icon(
                               Icons.check_circle,
-                              color: AppColors.primaryBrown,
+                              color: theme.colorScheme.primary,
                             )
                           : null,
                       onTap: () {
@@ -130,7 +136,7 @@ class _RecommendationsScreenState
                         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                       ),
                       tileColor: isSelected
-                          ? AppColors.primaryBrown.withValues(alpha: 0.1)
+                          ? theme.colorScheme.primary.withValues(alpha: 0.1)
                           : null,
                     );
                   },
@@ -169,16 +175,19 @@ class _RecommendationsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('Recommendations', style: AppTextStyles.appTitle),
+        title: Text('Recommendations', style: theme.textTheme.headlineLarge),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -190,9 +199,11 @@ class _RecommendationsScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Uploaded Item',
-                    style: AppTextStyles.sectionHeader,
+                    style: AppTextStyles.sectionHeader.copyWith(
+                      color: theme.textTheme.headlineMedium?.color,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Center(
@@ -200,13 +211,13 @@ class _RecommendationsScreenState
                       width: 280,
                       height: 280,
                       decoration: BoxDecoration(
-                        color: AppColors.cardBackground,
+                        color: theme.cardTheme.color,
                         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                        boxShadow: const [
+                        boxShadow: [
                           BoxShadow(
-                            color: AppColors.shadowMedium,
+                            color: isDarkMode ? AppColors.shadowMediumDark : AppColors.shadowMedium,
                             blurRadius: 12,
-                            offset: Offset(0, 4),
+                            offset: const Offset(0, 4),
                           ),
                         ],
                       ),
@@ -216,11 +227,11 @@ class _RecommendationsScreenState
                           File(widget.imagePath),
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            return const Center(
+                            return Center(
                               child: Icon(
                                 Icons.image_not_supported,
                                 size: 64,
-                                color: AppColors.textTertiary,
+                                color: isDarkMode ? AppColors.textTertiaryDark : AppColors.textTertiary,
                               ),
                             );
                           },
@@ -240,9 +251,11 @@ class _RecommendationsScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Filter Recommendations',
-                    style: AppTextStyles.sectionHeader,
+                    style: AppTextStyles.sectionHeader.copyWith(
+                      color: theme.textTheme.headlineMedium?.color,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Wrap(
@@ -259,17 +272,17 @@ class _RecommendationsScreenState
                               _selectedFilter = filter;
                             });
                           },
-                          backgroundColor: AppColors.cardBackground,
-                          selectedColor: AppColors.primaryBrown,
+                          backgroundColor: theme.cardTheme.color,
+                          selectedColor: theme.colorScheme.primary,
                           labelStyle: AppTextStyles.badge.copyWith(
                             color: isSelected
-                                ? AppColors.cardBackground
-                                : AppColors.textPrimary,
+                                ? theme.colorScheme.onPrimary
+                                : theme.textTheme.bodyMedium?.color,
                           ),
                           side: BorderSide(
                             color: isSelected
-                                ? AppColors.primaryBrown
-                                : AppColors.borderLight,
+                                ? theme.colorScheme.primary
+                                : (isDarkMode ? AppColors.borderLightDark : AppColors.borderLight),
                           ),
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.md,
@@ -287,17 +300,17 @@ class _RecommendationsScreenState
                             Icon(
                               Icons.arrow_drop_down,
                               size: 18,
-                              color: AppColors.textPrimary,
+                              color: theme.textTheme.bodyMedium?.color,
                             ),
                           ],
                         ),
                         onPressed: _showAllFiltersModal,
-                        backgroundColor: AppColors.cardBackground,
+                        backgroundColor: theme.cardTheme.color,
                         labelStyle: AppTextStyles.badge.copyWith(
-                          color: AppColors.textPrimary,
+                          color: theme.textTheme.bodyMedium?.color,
                         ),
-                        side: const BorderSide(
-                          color: AppColors.borderLight,
+                        side: BorderSide(
+                          color: isDarkMode ? AppColors.borderLightDark : AppColors.borderLight,
                         ),
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.md,
@@ -316,9 +329,11 @@ class _RecommendationsScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Your Personalized Recommendations',
-                    style: AppTextStyles.sectionHeader,
+                    style: AppTextStyles.sectionHeader.copyWith(
+                      color: theme.textTheme.headlineMedium?.color,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   ListView.builder(
@@ -344,8 +359,8 @@ class _RecommendationsScreenState
         onPressed: () {
           // TODO: Shuffle recommendations
         },
-        backgroundColor: AppColors.primaryBrown,
-        child: const Icon(Icons.shuffle, color: AppColors.cardBackground),
+        backgroundColor: theme.colorScheme.primary,
+        child: Icon(Icons.shuffle, color: theme.colorScheme.onPrimary),
       ),
     );
   }
@@ -365,16 +380,19 @@ class _RecommendationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: AppColors.shadowMedium,
+            color: isDarkMode ? AppColors.shadowMediumDark : AppColors.shadowMedium,
             blurRadius: 8,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -394,12 +412,12 @@ class _RecommendationCard extends StatelessWidget {
               errorBuilder: (context, error, stackTrace) {
                 return Container(
                   height: 320,
-                  color: AppColors.borderLight,
-                  child: const Center(
+                  color: isDarkMode ? AppColors.borderLightDark : AppColors.borderLight,
+                  child: Center(
                     child: Icon(
                       Icons.image_not_supported,
                       size: 64,
-                      color: AppColors.textTertiary,
+                      color: isDarkMode ? AppColors.textTertiaryDark : AppColors.textTertiary,
                     ),
                   ),
                 );
@@ -415,7 +433,9 @@ class _RecommendationCard extends StatelessWidget {
               children: [
                 Text(
                   name,
-                  style: AppTextStyles.h3,
+                  style: AppTextStyles.h3.copyWith(
+                    color: theme.textTheme.headlineSmall?.color,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -434,7 +454,7 @@ class _RecommendationCard extends StatelessWidget {
                     Text(
                       category,
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                        color: isDarkMode ? AppColors.textSecondaryDark : AppColors.textSecondary,
                       ),
                     ),
                   ],

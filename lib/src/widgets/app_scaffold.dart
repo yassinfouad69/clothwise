@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:clothwise/src/app/router.dart';
 import 'package:clothwise/src/app/theme/app_colors.dart';
 import 'package:clothwise/src/app/theme/app_spacing.dart';
 
 /// Main scaffold with bottom navigation bar
-class AppScaffold extends StatelessWidget {
+class AppScaffold extends ConsumerWidget {
   const AppScaffold({
     required this.child,
     super.key,
@@ -14,7 +15,7 @@ class AppScaffold extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: child,
       bottomNavigationBar: const _BottomNavBar(),
@@ -22,7 +23,7 @@ class AppScaffold extends StatelessWidget {
   }
 }
 
-class _BottomNavBar extends StatelessWidget {
+class _BottomNavBar extends ConsumerWidget {
   const _BottomNavBar();
 
   int _calculateSelectedIndex(BuildContext context) {
@@ -48,15 +49,26 @@ class _BottomNavBar extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final selectedIndex = _calculateSelectedIndex(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Background color changes based on theme
+    final navBackgroundColor = isDark
+        ? AppColors.backgroundDark // Black in dark mode
+        : Colors.white; // White in light mode
+
+    // Icon color changes based on theme
+    final iconColor = isDark
+        ? const Color(0xFFB8956A) // Gold in dark mode
+        : AppColors.primaryBrown; // Brown in light mode
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.cardBackground,
-        boxShadow: [
+      decoration: BoxDecoration(
+        color: navBackgroundColor,
+        boxShadow: const [
           BoxShadow(
-            color: AppColors.shadowMedium,
+            color: Color(0x1A000000),
             blurRadius: 8,
             offset: Offset(0, -2),
           ),
@@ -69,10 +81,12 @@ class _BottomNavBar extends StatelessWidget {
             currentIndex: selectedIndex,
             onTap: (index) => _onItemTapped(context, index),
             type: BottomNavigationBarType.fixed,
-            backgroundColor: AppColors.cardBackground,
-            selectedItemColor: AppColors.navActive,
-            unselectedItemColor: AppColors.navInactive,
+            backgroundColor: navBackgroundColor,
+            selectedItemColor: iconColor, // Selected icon color
+            unselectedItemColor: iconColor.withValues(alpha: 0.6), // Unselected icons with transparency
             elevation: 0,
+            selectedLabelStyle: TextStyle(color: iconColor),
+            unselectedLabelStyle: TextStyle(color: iconColor.withValues(alpha: 0.6)),
             items: const [
               BottomNavigationBarItem(
                 icon: Icon(Icons.home_outlined),

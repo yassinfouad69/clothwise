@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:clothwise/src/app/router.dart';
 import 'package:clothwise/src/app/theme/app_colors.dart';
 import 'package:clothwise/src/app/theme/app_spacing.dart';
 import 'package:clothwise/src/app/theme/app_text_styles.dart';
+import 'package:clothwise/src/app/theme/theme_provider.dart';
 import 'package:clothwise/src/widgets/app_text_field.dart';
 import 'package:clothwise/src/features/wardrobe/presentation/providers/wardrobe_providers.dart';
 import 'package:clothwise/src/features/wardrobe/presentation/add_item_screen.dart';
@@ -30,17 +33,20 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = ref.watch(isDarkModeProvider);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
-        title: const Text('My Wardrobe', style: AppTextStyles.appTitle),
+        title: Text('My Wardrobe', style: theme.textTheme.headlineLarge),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {
-              // TODO: Show settings modal
+              context.go(RoutePaths.profile);
             },
           ),
         ],
@@ -81,17 +87,17 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
                         _selectedCategory = category;
                       });
                     },
-                    backgroundColor: AppColors.cardBackground,
-                    selectedColor: AppColors.primaryBrown,
+                    backgroundColor: theme.cardTheme.color,
+                    selectedColor: theme.colorScheme.primary,
                     labelStyle: AppTextStyles.badge.copyWith(
                       color: isSelected
-                          ? AppColors.cardBackground
-                          : AppColors.textPrimary,
+                          ? theme.colorScheme.onPrimary
+                          : theme.textTheme.bodyMedium?.color,
                     ),
                     side: BorderSide(
                       color: isSelected
-                          ? AppColors.primaryBrown
-                          : AppColors.borderLight,
+                          ? theme.colorScheme.primary
+                          : (isDarkMode ? AppColors.borderLightDark : AppColors.borderLight),
                     ),
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.md,
@@ -126,19 +132,21 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
                             Icon(
                               Icons.checkroom_outlined,
                               size: 64,
-                              color: AppColors.textTertiary,
+                              color: isDarkMode ? AppColors.textTertiaryDark : AppColors.textTertiary,
                             ),
                             const SizedBox(height: AppSpacing.md),
                             Text(
                               'No items in your wardrobe',
                               style: AppTextStyles.bodyRegular.copyWith(
-                                color: AppColors.textSecondary,
+                                color: isDarkMode ? AppColors.textSecondaryDark : AppColors.textSecondary,
                               ),
                             ),
                             const SizedBox(height: AppSpacing.sm),
                             Text(
                               'Tap + to add your first item',
-                              style: AppTextStyles.bodySmall,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: theme.textTheme.bodySmall?.color,
+                              ),
                             ),
                           ],
                         ),
@@ -160,9 +168,9 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
                       },
                     );
                   },
-                  loading: () => const Center(
+                  loading: () => Center(
                     child: CircularProgressIndicator(
-                      color: AppColors.primaryBrown,
+                      color: theme.colorScheme.primary,
                     ),
                   ),
                   error: (error, stack) => Center(
@@ -172,19 +180,21 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
                         Icon(
                           Icons.error_outline,
                           size: 64,
-                          color: AppColors.textTertiary,
+                          color: isDarkMode ? AppColors.textTertiaryDark : AppColors.textTertiary,
                         ),
                         const SizedBox(height: AppSpacing.md),
                         Text(
                           'Error loading items',
                           style: AppTextStyles.bodyRegular.copyWith(
-                            color: AppColors.textSecondary,
+                            color: isDarkMode ? AppColors.textSecondaryDark : AppColors.textSecondary,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         Text(
                           error.toString(),
-                          style: AppTextStyles.bodySmall,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: theme.textTheme.bodySmall?.color,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -205,8 +215,8 @@ class _WardrobeScreenState extends ConsumerState<WardrobeScreen> {
             ),
           );
         },
-        backgroundColor: AppColors.primaryBrown,
-        child: const Icon(Icons.add, color: AppColors.cardBackground),
+        backgroundColor: theme.colorScheme.primary,
+        child: Icon(Icons.add, color: theme.colorScheme.onPrimary),
       ),
     );
   }
@@ -221,15 +231,18 @@ class _WardrobeItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: AppColors.shadowMedium,
+            color: isDarkMode ? AppColors.shadowMediumDark : AppColors.shadowMedium,
             blurRadius: 8,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -240,7 +253,7 @@ class _WardrobeItemCard extends StatelessWidget {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.borderLight,
+                color: isDarkMode ? AppColors.borderLightDark : AppColors.borderLight,
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(AppSpacing.cardRadius),
                 ),
@@ -254,24 +267,24 @@ class _WardrobeItemCard extends StatelessWidget {
                         imageUrl: item.imageUrl!,
                         fit: BoxFit.cover,
                         width: double.infinity,
-                        placeholder: (context, url) => const Center(
+                        placeholder: (context, url) => Center(
                           child: CircularProgressIndicator(
-                            color: AppColors.primaryBrown,
+                            color: theme.colorScheme.primary,
                           ),
                         ),
-                        errorWidget: (context, url, error) => const Center(
+                        errorWidget: (context, url, error) => Center(
                           child: Icon(
                             Icons.error_outline,
-                            color: AppColors.textTertiary,
+                            color: isDarkMode ? AppColors.textTertiaryDark : AppColors.textTertiary,
                           ),
                         ),
                       ),
                     )
-                  : const Center(
+                  : Center(
                       child: Icon(
                         Icons.checkroom_outlined,
                         size: 48,
-                        color: AppColors.textTertiary,
+                        color: isDarkMode ? AppColors.textTertiaryDark : AppColors.textTertiary,
                       ),
                     ),
             ),
@@ -285,7 +298,9 @@ class _WardrobeItemCard extends StatelessWidget {
               children: [
                 Text(
                   item.name,
-                  style: AppTextStyles.itemName,
+                  style: AppTextStyles.itemName.copyWith(
+                    color: theme.textTheme.bodyLarge?.color,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -298,12 +313,17 @@ class _WardrobeItemCard extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        border: Border.all(color: AppColors.borderLight),
+                        border: Border.all(
+                          color: isDarkMode ? AppColors.borderLightDark : AppColors.borderLight,
+                        ),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         item.usage.displayName,
-                        style: const TextStyle(fontSize: 10),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: theme.textTheme.bodySmall?.color,
+                        ),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.xs),
@@ -313,14 +333,19 @@ class _WardrobeItemCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: _getColorFromName(item.color),
                         shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.borderLight),
+                        border: Border.all(
+                          color: isDarkMode ? AppColors.borderLightDark : AppColors.borderLight,
+                        ),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.xs),
                     Expanded(
                       child: Text(
                         item.color,
-                        style: const TextStyle(fontSize: 10),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: theme.textTheme.bodySmall?.color,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:clothwise/src/app/router.dart';
 import 'package:clothwise/src/app/theme/app_colors.dart';
 import 'package:clothwise/src/app/theme/app_spacing.dart';
 import 'package:clothwise/src/app/theme/app_text_styles.dart';
@@ -18,17 +20,20 @@ class _ShopScreenState extends State<ShopScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
-        title: const Text('Shop', style: AppTextStyles.appTitle),
+        title: Text('Shop', style: theme.textTheme.headlineLarge),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {
-              // TODO: Show settings modal
+              context.go(RoutePaths.profile);
             },
           ),
         ],
@@ -55,17 +60,17 @@ class _ShopScreenState extends State<ShopScreen> {
                         _selectedFilter = filter;
                       });
                     },
-                    backgroundColor: AppColors.cardBackground,
-                    selectedColor: AppColors.primaryBrown,
+                    backgroundColor: theme.cardTheme.color,
+                    selectedColor: theme.colorScheme.primary,
                     labelStyle: AppTextStyles.badge.copyWith(
                       color: isSelected
-                          ? AppColors.cardBackground
-                          : AppColors.textPrimary,
+                          ? theme.colorScheme.onPrimary
+                          : theme.textTheme.bodyMedium?.color,
                     ),
                     side: BorderSide(
                       color: isSelected
-                          ? AppColors.primaryBrown
-                          : AppColors.borderLight,
+                          ? theme.colorScheme.primary
+                          : (isDarkMode ? AppColors.borderLightDark : AppColors.borderLight),
                     ),
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.md,
@@ -83,9 +88,9 @@ class _ShopScreenState extends State<ShopScreen> {
               padding: const EdgeInsets.all(AppSpacing.lg),
               children: [
                 // New Article Types section
-                const Text(
+                Text(
                   'New Article Types',
-                  style: AppTextStyles.sectionHeader,
+                  style: theme.textTheme.headlineMedium,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 _ShopItemCard(
@@ -119,9 +124,9 @@ class _ShopScreenState extends State<ShopScreen> {
                 const SizedBox(height: AppSpacing.xl),
 
                 // New Colors for Existing Types section
-                const Text(
+                Text(
                   'New Colors for Existing Types',
-                  style: AppTextStyles.sectionHeader,
+                  style: theme.textTheme.headlineMedium,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 _ShopItemCard(
@@ -151,15 +156,17 @@ class _ShopScreenState extends State<ShopScreen> {
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   decoration: BoxDecoration(
-                    color: AppColors.cardBackground,
+                    color: theme.cardTheme.color,
                     borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                    border: Border.all(color: AppColors.borderLight),
+                    border: Border.all(
+                      color: isDarkMode ? AppColors.borderLightDark : AppColors.borderLight,
+                    ),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.info_outline,
-                        color: AppColors.textSecondary,
+                        color: isDarkMode ? AppColors.textSecondaryDark : AppColors.textSecondary,
                         size: 20,
                       ),
                       const SizedBox(width: AppSpacing.sm),
@@ -167,7 +174,7 @@ class _ShopScreenState extends State<ShopScreen> {
                         child: Text(
                           'Based on wardrobe gaps',
                           style: AppTextStyles.caption.copyWith(
-                            color: AppColors.textSecondary,
+                            color: isDarkMode ? AppColors.textSecondaryDark : AppColors.textSecondary,
                           ),
                         ),
                       ),
@@ -198,15 +205,18 @@ class _ShopItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: AppColors.shadowMedium,
+            color: isDarkMode ? AppColors.shadowMediumDark : AppColors.shadowMedium,
             blurRadius: 8,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -223,12 +233,12 @@ class _ShopItemCard extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: AppColors.background,
+                    color: theme.scaffoldBackgroundColor,
                     borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   ),
                   child: Icon(
                     icon,
-                    color: AppColors.primaryBrown,
+                    color: theme.colorScheme.primary,
                     size: 24,
                   ),
                 ),
@@ -240,7 +250,7 @@ class _ShopItemCard extends StatelessWidget {
                       Text(
                         title,
                         style: AppTextStyles.itemName.copyWith(
-                          color: AppColors.textPrimary,
+                          color: theme.textTheme.bodyLarge?.color,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -248,7 +258,9 @@ class _ShopItemCard extends StatelessWidget {
                       const SizedBox(height: AppSpacing.xs),
                       Text(
                         subtitle,
-                        style: AppTextStyles.caption,
+                        style: AppTextStyles.caption.copyWith(
+                          color: theme.textTheme.bodySmall?.color,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
