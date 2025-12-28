@@ -1,0 +1,106 @@
+name: clothwise
+description: AI-powered outfit recommendation app
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.5.1
+  hooks_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Routing
+  go_router: ^14.0.2
+
+  # HTTP & Data
+  dio: ^5.4.0
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.8.1
+
+  # i18n
+  intl: ^0.19.0
+
+  # UI
+  flutter_hooks: ^0.20.5
+  cached_network_image: ^3.3.1
+  flutter_svg: ^2.0.10+1
+  smooth_page_indicator: ^1.1.0
+
+  # Utils
+  equatable: ^2.0.5
+  logger: ^2.0.2+1
+
+  # Firebase
+  firebase_core: ^3.8.0
+  firebase_auth: ^5.3.3
+  cloud_firestore: ^5.5.0
+
+  # Image Picker
+  image_picker: ^1.0.7
+  path_provider: ^2.1.2
+  uuid: ^4.3.3
+
+  # URL Launcher
+  url_launcher: ^6.2.5
+
+  # Preferences
+  shared_preferences: ^2.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Linting
+  flutter_lints: ^3.0.1
+  very_good_analysis: ^5.1.0
+
+  # Code Generation
+  build_runner: ^2.4.8
+  riverpod_generator: ^2.3.11
+  freezed: ^2.4.7
+  json_serializable: ^6.7.1
+  hive_generator: ^2.0.1
+
+  # Testing
+  golden_toolkit: ^0.15.0
+  mocktail: ^1.0.3
+
+  # App Icon Generator
+  flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  min_sdk_android: 21
+  # Remove alpha channel for iOS App Store compliance
+  remove_alpha_ios: true
+  # Disable adaptive icons to use standard icons only (better centering)
+  adaptive_icon_background: "#EDE4D8"
+  adaptive_icon_foreground: "assets/icons/app_icon.png"
